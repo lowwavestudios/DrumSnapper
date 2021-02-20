@@ -10,4 +10,7 @@ Drum Snapper is a Transient Shaper tailored for drums. It can add more snap or m
 
 Made using the JUCE framework
 
+These plugins are free to use and I make them on my spare time. If you like them and are able to help by becoming a Patreon member, I would be very grateful.
+[Patreon](https://www.patreon.com/lowwavestudios)
+
 ![Screenshot](DrumSnapperPic2.png)
