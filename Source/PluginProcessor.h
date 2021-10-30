@@ -36,6 +36,9 @@
 #define GAIN_NAME "HF Gain"
 
 
+#define UISIZE_ID "ui size"
+#define UISIZE_NAME "UI Size"
+
 //==============================================================================
 /**
 */
@@ -98,8 +101,8 @@ private:
     float lastSampleRate{44100};
     int atkCount{ 0 };
 
-    void DrumSnapperAudioProcessor::setParams();
-    void DrumSnapperAudioProcessor::updateFilter();
+    void setParams();
+    void updateFilter();
 
     EnvelopeShaper mEnvelopeFast;
     EnvelopeShaper2 mEnvelopeSlow;

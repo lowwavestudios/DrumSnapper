@@ -37,11 +37,12 @@ AudioProcessorValueTreeState::ParameterLayout DrumSnapperAudioProcessor::createP
 
     auto snapParam = std::make_unique <AudioParameterFloat>(SNAP_ID, SNAP_NAME, -5.0f, 5.0f, 0.0f);
     auto focusParam = std::make_unique <AudioParameterFloat>(FOCUS_ID, FOCUS_NAME, 1.0f, 5.0f, 0.1f);
-    auto releaseParam = std::make_unique <AudioParameterFloat>(RELEASE_ID, RELEASE_NAME, 5.0f, 350.0f, 150.0f);
+    auto releaseParam = std::make_unique <AudioParameterInt>(RELEASE_ID, RELEASE_NAME, 5, 350, 150);
     auto outputParam = std::make_unique <AudioParameterFloat>(OUTPUT_ID, OUTPUT_NAME, -24.0f, 6.0f, 0.0f);
-    auto gainParam = std::make_unique <AudioParameterFloat>(GAIN_ID, GAIN_NAME, 1.0f, 10.f, 1.0f);
-    auto saturationParam = std::make_unique <AudioParameterFloat>(SATURATION_ID, SATURATION_NAME, 0.0f, 100.f, 0.0f);
+    auto gainParam = std::make_unique <AudioParameterFloat>(GAIN_ID, GAIN_NAME, 1.f, 10.f, 1.f);
+    auto saturationParam = std::make_unique <AudioParameterInt>(SATURATION_ID, SATURATION_NAME, 0, 100, 0);
     auto clipParam = std::make_unique <AudioParameterBool>(CLIP_ID, CLIP_NAME, true);
+    auto uiSizeParam = std::make_unique <AudioParameterInt>(UISIZE_ID, UISIZE_NAME, 200, 1200, 400);
 
     params.push_back(std::move(snapParam));
     params.push_back(std::move(focusParam));
@@ -50,6 +51,7 @@ AudioProcessorValueTreeState::ParameterLayout DrumSnapperAudioProcessor::createP
     params.push_back(std::move(gainParam));
     params.push_back(std::move(saturationParam));
     params.push_back(std::move(clipParam));
+    params.push_back(std::move(uiSizeParam));
     
 
     return { params.begin(), params.end() };

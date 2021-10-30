@@ -2,11 +2,14 @@
 
 <JUCERPROJECT id="GsSvkS" name="Drum Snapper" projectType="audioplug" useAppConfig="1"
               addUsingNamespaceToJuceHeader="1" displaySplashScreen="1" jucerFormatVersion="1"
-              pluginFormats="buildVST3" companyName="Low Wave Studios" companyWebsite="www.lowwavestudios.com"
-              companyEmail="lowwavestudios@gmail.com" pluginName="Drum Snapper"
-              pluginVST3Category="Distortion,Dynamics,EQ" cppLanguageStandard="latest">
+              pluginFormats="buildAU,buildAUv3,buildVST3" companyName="Low Wave Studios"
+              companyWebsite="www.lowwavestudios.com" companyEmail="lowwavestudios@gmail.com"
+              pluginName="Drum Snapper" pluginVST3Category="Distortion,Dynamics,EQ"
+              cppLanguageStandard="latest" version="1.1.0">
   <MAINGROUP id="QoKCTo" name="Drum Snapper">
     <GROUP id="{0F31071D-8664-25BE-9358-BB3ECFFE9A56}" name="Source">
+      <FILE id="tdUuDI" name="UbuntuFont.cpp" compile="1" resource="0" file="Source/UbuntuFont.cpp"/>
+      <FILE id="s8TTVJ" name="UbuntuFont.h" compile="0" resource="0" file="Source/UbuntuFont.h"/>
       <FILE id="PFIy4F" name="AudioDevEffect.h" compile="0" resource="0"
             file="Source/AudioDevEffect.h"/>
       <FILE id="HjEoru" name="EnvelopeShaper.h" compile="0" resource="0"
@@ -45,6 +48,27 @@
         <MODULEPATH id="juce_gui_extra" path="../../../../JUCE/modules"/>
       </MODULEPATHS>
     </VS2019>
+    <XCODE_MAC targetFolder="Builds/MacOSX">
+      <CONFIGURATIONS>
+        <CONFIGURATION isDebug="1" name="Debug"/>
+        <CONFIGURATION isDebug="0" name="Release"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_gui_extra"/>
+        <MODULEPATH id="juce_gui_basics"/>
+        <MODULEPATH id="juce_graphics"/>
+        <MODULEPATH id="juce_events"/>
+        <MODULEPATH id="juce_dsp"/>
+        <MODULEPATH id="juce_data_structures"/>
+        <MODULEPATH id="juce_core"/>
+        <MODULEPATH id="juce_audio_utils"/>
+        <MODULEPATH id="juce_audio_processors"/>
+        <MODULEPATH id="juce_audio_plugin_client"/>
+        <MODULEPATH id="juce_audio_formats"/>
+        <MODULEPATH id="juce_audio_devices"/>
+        <MODULEPATH id="juce_audio_basics"/>
+      </MODULEPATHS>
+    </XCODE_MAC>
   </EXPORTFORMATS>
   <MODULES>
     <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>

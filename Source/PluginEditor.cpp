@@ -19,13 +19,23 @@ DrumSnapperAudioProcessorEditor::DrumSnapperAudioProcessorEditor (DrumSnapperAud
 
     setResizable(true, true);
     setResizeLimits(300, 200, 1800, 1200);
-
+    getConstrainer()->setFixedAspectRatio(1.5);
     //set main size from Desktop screen size
     //juce::Rectangle<int> r = Desktop::getInstance().getDisplays().getMainDisplay().userArea;
 
     //auto screenHeight = r.getHeight() * 0.78125f;
 
     //setSize((4.f / 3.f) * screenHeight, screenHeight);
+
+    uiSize = *audioProcessor.parameters.getRawParameterValue(UISIZE_ID);
+
+    setSize(1.5 * uiSize, uiSize);
+
+    customTypeface = Typeface::createSystemTypefaceFor(UbuntuFont::UbuntuRegular_ttf,
+        UbuntuFont::UbuntuRegular_ttfSize);
+
+    LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(customTypeface);
+
 
     help.reset(new HyperlinkButton(TRANS("?"), URL("http://www.lowwavestudios.com/#software_section"))); //Help link
     addAndMakeVisible(help.get());
@@ -34,8 +44,6 @@ DrumSnapperAudioProcessorEditor::DrumSnapperAudioProcessorEditor (DrumSnapperAud
     help->setFont(14.f, Font::plain);
 
     cachedImage_logo2020_png2_1 = ImageCache::getFromMemory(logoSmall_png, logoSmall_pngSize); // logo
-
-    setSize(600, 400);
 
     snapBodySliderValue = std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.parameters, SNAP_ID, snapBodySlider);
     focusSliderValue = std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.parameters, FOCUS_ID, focusSlider);
@@ -46,43 +54,51 @@ DrumSnapperAudioProcessorEditor::DrumSnapperAudioProcessorEditor (DrumSnapperAud
 
     clipButtonValue = std::make_unique <AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.parameters, CLIP_ID, clipButton);
 
+    uiSizeSliderValue = std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.parameters, UISIZE_ID, uiSizeSlider);
+    addAndMakeVisible(&uiSizeSlider);
+    uiSizeSlider.setRange(300, 1800, 1);
+    uiSizeSlider.addListener(this);
+
     LookAndFeel::setDefaultLookAndFeel(&rotaryLAF);
     addAndMakeVisible(&focusSlider);
-    focusSlider.setRange(1.0f, 5.0f, 0.1f);
-    focusSlider.addListener(this);
+    focusSlider.setRange(1.0f, 5.0f, 0.01f);
     focusSlider.setDoubleClickReturnValue(true, 1.0f);
-    focusSlider.setSliderSnapsToMousePosition(true);
-
-    addAndMakeVisible(&snapBodySlider);
-    snapBodySlider.setRange(-5.0f, 5.0f, 0.1f);
-    snapBodySlider.addListener(this);
+    defaultSliderBehaviour(focusSlider);
 
     addAndMakeVisible(&snapBodyText);
+
+    addAndMakeVisible(&snapBodySlider);
+    snapBodySlider.setRange(-5.0f, 5.0f, 0.01f);
+    snapBodySlider.setDoubleClickReturnValue(true, 0.0f);
+    defaultSliderBehaviour(snapBodySlider);
+    snapBodySlider.setSliderSnapsToMousePosition(false);
     
 
     addAndMakeVisible(&releaseSlider);
-    releaseSlider.setRange(5.0f, 350.0f, 0.1f);
-    releaseSlider.addListener(this);
-    releaseSlider.setDoubleClickReturnValue(true, 150.0f);
-    releaseSlider.setSliderSnapsToMousePosition(true);
+    releaseSlider.setRange(5, 350, 1);
+    releaseSlider.setDoubleClickReturnValue(true, 150);
+    defaultSliderBehaviour(releaseSlider);
+    releaseSlider.setTextValueSuffix(" ms");
+
 
     addAndMakeVisible(&hfGainSlider);
-    hfGainSlider.setRange(1.0f, 10.0f, 0.1f);
-    hfGainSlider.addListener(this);
-    hfGainSlider.setDoubleClickReturnValue(true, 1.0f);
-    hfGainSlider.setSliderSnapsToMousePosition(true);
+    hfGainSlider.setRange(1.f, 10.f, 0.01f);
+    hfGainSlider.setDoubleClickReturnValue(true, 1.f);
+    defaultSliderBehaviour(hfGainSlider);
+    hfGainSlider.setTextValueSuffix(" x");
+
 
     addAndMakeVisible(&hfSatMixSlider);
-    hfSatMixSlider.setRange(0.0f, 100.0f, 1.0f);
-    hfSatMixSlider.addListener(this);
+    hfSatMixSlider.setRange(0, 100, 1);
     hfSatMixSlider.setDoubleClickReturnValue(true, 0.0f);
-    hfSatMixSlider.setSliderSnapsToMousePosition(true);
+    defaultSliderBehaviour(hfSatMixSlider);
+    hfSatMixSlider.setTextValueSuffix("%");
 
     addAndMakeVisible(&outputSlider);
-    outputSlider.setRange(-24.0f, 6.0f, 0.1f);
-    outputSlider.addListener(this);
+    outputSlider.setRange(-24.0f, 6.0f, 0.01f);
     outputSlider.setDoubleClickReturnValue(true, 0.0f);
-    outputSlider.setSliderSnapsToMousePosition(true);
+    defaultSliderBehaviour(outputSlider);
+    outputSlider.setTextValueSuffix(" dB");
 
 
     addAndMakeVisible(&clipButton);
@@ -98,10 +114,21 @@ DrumSnapperAudioProcessorEditor::~DrumSnapperAudioProcessorEditor()
 {
 }
 
+void DrumSnapperAudioProcessorEditor::defaultSliderBehaviour(Slider& slider)
+{
+    slider.addListener(this);
+    slider.setSliderSnapsToMousePosition(false);
+    slider.setTextBoxIsEditable(true);
+}
+
 //==============================================================================
 void DrumSnapperAudioProcessorEditor::paint (juce::Graphics& g)
 {
+    LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(customTypeface);
+    LWSFont = g.getCurrentFont();
     //keepAspectRatio();
+
+    getConstrainer()->setFixedAspectRatio(1.5);
 
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (Colours::black);
@@ -143,7 +170,7 @@ void DrumSnapperAudioProcessorEditor::paint (juce::Graphics& g)
                 RectanglePlacement::centred, 1.000f);*/
 
         g.setColour(Colours::whitesmoke);
-        g.setFont(Font::bold);
+        g.setFont(LWSFont);
         g.setFont(height);
         g.drawText("Drum Snapper", x, y, width, height, Justification::centred);
     }
@@ -158,9 +185,9 @@ void DrumSnapperAudioProcessorEditor::paint (juce::Graphics& g)
         g.setColour(Colours::whitesmoke);
 
         g.setOpacity(0.5f);
-        //g.setFont(Font::bold);
+        g.setFont(LWSFont.withStyle(0));
         g.setFont(2 * square);
-        g.drawText("1.0.0", windowWidth - (square * 12), square * 2.f, square * 6, square * 2, Justification::centred);
+        g.drawText(JucePlugin_VersionString, windowWidth - (square * 12), square * 2.f, square * 6, square * 2, Justification::centred);
 
     }
 
@@ -206,8 +233,8 @@ void DrumSnapperAudioProcessorEditor::paint (juce::Graphics& g)
 
     paramTextStyle(g, "HF Gain", hfGainSlider.getX(), hfGainSlider.getY() - (sliderHeight * 0.75), hfGainSlider.getWidth(), 2.5 * square, false, Justification::horizontallyCentred, Colour::fromRGBA(171, 171, 171, 0.75));
     paramTextStyle(g, "HF Saturation Mix", hfSatMixSlider.getX(), hfSatMixSlider.getY() - (sliderHeight * 0.75), hfSatMixSlider.getWidth(), 2.5 * square, false, Justification::horizontallyCentred, Colour::fromRGBA(171, 171, 171, 0.75));
-    paramTextStyle(g, "Release (ms)", releaseSlider.getX(), releaseSlider.getY() - (sliderHeight * 0.75), releaseSlider.getWidth(), 2.5 * square, false, Justification::horizontallyCentred, Colour::fromRGBA(171, 171, 171, 0.75));
-    paramTextStyle(g, "Output (Pre-Clip)", outputSlider.getX(), outputSlider.getY() - (sliderHeight * 0.75), outputSlider.getWidth(), 2.5 * square, false, Justification::horizontallyCentred, Colour::fromRGBA(171, 171, 171, 0.75));
+    paramTextStyle(g, "Release", releaseSlider.getX(), releaseSlider.getY() - (sliderHeight * 0.75), releaseSlider.getWidth(), 2.5 * square, false, Justification::horizontallyCentred, Colour::fromRGBA(171, 171, 171, 0.75));
+    paramTextStyle(g, "Output (Pre-Clipper)", outputSlider.getX(), outputSlider.getY() - (sliderHeight * 0.75), outputSlider.getWidth(), 2.5 * square, false, Justification::horizontallyCentred, Colour::fromRGBA(171, 171, 171, 0.75));
     paramTextStyle(g, "Oversampled", clipButton.getX() - (sliderWidth * 0.44), clipButton.getY() + (2*square), sliderWidth, 2 * square, false, Justification::centredBottom, Colour::fromRGBA(171, 171, 171, 0.75));
     paramTextStyle(g, "Clipper", clipButton.getX() - (sliderWidth * 0.44), clipButton.getY() + (4 * square), sliderWidth, 2 * square, false, Justification::centredBottom, Colour::fromRGBA(171, 171, 171, 0.75));
     paramTextStyle(g, "Focus", focusSlider.getX(), focusSlider.getY() + (sliderHeight * 0.75), focusSlider.getWidth(), 2.5 * square, false, Justification::horizontallyCentred, Colour::fromRGBA(171, 171, 171, 0.75));
@@ -218,9 +245,14 @@ void DrumSnapperAudioProcessorEditor::paint (juce::Graphics& g)
 
 void DrumSnapperAudioProcessorEditor::resized()
 {
+    LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(customTypeface);
+    getConstrainer()->setFixedAspectRatio(1.5);
+
     auto area = getLocalBounds();
     auto windowHeight = area.getHeight();
     auto windowWidth = area.getWidth();
+
+    uiSizeSlider.setValue(windowHeight);
 
     float square = area.getWidth() / 100;
     auto sliderHeight = 5 * square;
@@ -246,7 +278,7 @@ void DrumSnapperAudioProcessorEditor::resized()
         auto sliderBounds = snapBodySlider.getBounds();
 
         snapBodyText.setSize(w, h);
-        Point textBounds = sliderBounds.getCentre();
+        Point<int> textBounds = sliderBounds.getCentre();
         Point<int> addPoint(square, 0);
         textBounds += addPoint;
         snapBodyText.setCentrePosition(textBounds);
@@ -259,7 +291,11 @@ void DrumSnapperAudioProcessorEditor::resized()
 
 void DrumSnapperAudioProcessorEditor::paintOverChildren(juce::Graphics& g)
 {
+    LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(customTypeface);
+    LWSFont = g.getCurrentFont();
+    //keepAspectRatio();
 
+    getConstrainer()->setFixedAspectRatio(1.5);
 
     snapBodyText.setText(snapBodySlider.getTextFromValue(snapBodySlider.getValue()), sendNotification);
 }
@@ -376,6 +412,7 @@ void DrumSnapperAudioProcessorEditor::newSliderStyle(Colour textColour, float tr
 
 void DrumSnapperAudioProcessorEditor::paramTextStyle(Graphics& g, String name, float x, float y, float width, float fontHeight, bool drawBox, Justification justification, Colour textColour)
 {
+    LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(customTypeface);
     float floatHeight = releaseSlider.getHeight();
 
     if (drawBox == true)

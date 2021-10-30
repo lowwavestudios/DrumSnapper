@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "UbuntuFont.h"
 
 #define green Colour::fromRGBA(7, 165, 18, 30);
 #define blue Colour::fromRGBA(7, 112, 165, 30);
@@ -27,7 +28,7 @@ public:
 
     }
 
-    void buttonLookAndFeel::drawTickBox(Graphics& g, Component& component,
+    void drawTickBox(Graphics& g, Component& component,
         float x, float y, float w, float h,
         const bool ticked,
         const bool isEnabled,
@@ -192,11 +193,17 @@ public:
 
     Image cachedImage_logo2020_png2_1;
 
-    void DrumSnapperAudioProcessorEditor::paramTextStyle(Graphics& g, String name, float x, float y, float width, float fontHeight, bool drawBox, Justification justification, Colour textColour = Colour(245, 245, 245));
+    void paramTextStyle(Graphics& g, String name, float x, float y, float width, float fontHeight, bool drawBox, Justification justification, Colour textColour = Colour(245, 245, 245));
+
+    void defaultSliderBehaviour(Slider& slider);
+
+    Typeface::Ptr customTypeface;
+
+    int uiSize{ 600 };
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+    Font LWSFont;
+
     DrumSnapperAudioProcessor& audioProcessor;
 
     Slider snapBodySlider;
@@ -226,6 +233,11 @@ private:
         clipButtonValue;
     std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment>
         outputSliderValue;
+
+
+    Slider uiSizeSlider;
+    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment>
+        uiSizeSliderValue;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DrumSnapperAudioProcessorEditor)
 };
